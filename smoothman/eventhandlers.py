@@ -9,10 +9,7 @@ except:
 
 import globals
 
-print globals.p
-
 def draw_handler(canvas):
-
     globals.p.draw(canvas)
 
     for target in globals.targets:
@@ -33,10 +30,28 @@ def keydown_handler(keycode):
     globals.has_moved = True
     try:
         key = globals.keys[keycode]
-        if key == 'right': globals.p.move_right()
-        if key == 'down': globals.p.move_down()
-        if key == 'left': globals.p.move_left()
-        if key == 'up': globals.p.move_up()
     except: print 'Invalid key press. Need to use arrow keys'
+    if key == 'right': 
+        globals.right = True
+    if key == 'down': 
+        globals.down = True
+    if key == 'left': 
+        globals.left = True
+    if key == 'up': 
+        globals.up = True
     
+def keyup_handler(keycode):
+    #try:
+    key = globals.keys[keycode]
+    if key == 'right': globals.right = False
+    if key == 'down': globals.down = False
+    if key == 'left': globals.left = False
+    if key == 'up': globals.up = False
+    #except: print 'Invalid key press. Need to use arrow keys'
 
+def poll_keyboard():
+    if globals.right: globals.p.move_right()
+    elif globals.left: globals.p.move_left()
+
+    if globals.up: globals.p.move_up()
+    elif globals.down: globals.p.move_down()

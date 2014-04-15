@@ -12,3 +12,8 @@ win = False
 has_moved = False
 
 p = None
+player_default_speed = 1.0/15
+up = False
+right = False
+down = False
+left = False

@@ -12,60 +12,93 @@ class player():
     def __init__(self):
         self.x, self.y = 0, 0
         self.direction = 'right'
+        self.nose_x, self.nose_y = self.x + 1, self.y
         self.score = 0
         self.carrying_box = False
+        #speed is measured in grid squares per screen refresh.
+        #For example, 1.0/15 means it takes 15 draws to move one 
+        #grid square
+        self.speed = globals.player_default_speed
+
+        self.moving = False
+        self.target_x = self.x
+        self.target_y = self.y
 
     def move_up(self):
-        if (self.x, self.y - 1) not in globals.blocked_coordinates: self.y -= 1
-        self.direction = 'up'
-        self.did_i_score()
-        self.pick_up_box()
-        if self.carrying_box: self.carrying_box.x, self.carrying_box.y = self.x, self.y - 1
+        if not self.moving:
+            self.direction = 'up'
+            if (self.x, self.y - 1) not in globals.blocked_coordinates: 
+                self.old_y, self.target_y = self.y, int(self.y - 1)
+                self.moving = True
 
     def move_down(self):
-        if (self.x, self.y + 1) not in globals.blocked_coordinates: self.y += 1
-        self.direction = 'down'
-        self.did_i_score()
-        self.pick_up_box()
-        if self.carrying_box: self.carrying_box.x, self.carrying_box.y = self.x, self.y + 1
+        if not self.moving:
+            self.direction = 'down'
+            if (self.x, self.y + 1) not in globals.blocked_coordinates: 
+                self.old_y, self.target_y = self.y, int(self.y + 1)
+                self.moving = True
 
     def move_right(self):
-        if (self.x + 1, self.y) not in globals.blocked_coordinates: self.x += 1
-        self.direction = 'right'
-        self.did_i_score()
-        self.pick_up_box()
-        if self.carrying_box: self.carrying_box.x, self.carrying_box.y = self.x + 1, self.y
+        if not self.moving:
+            self.direction = 'right'
+            if (self.x + 1, self.y) not in globals.blocked_coordinates: 
+                self.old_x, self.target_x = self.x, int(self.x + 1)
+                self.moving = True
 
     def move_left(self):
-        if (self.x - 1, self.y) not in globals.blocked_coordinates: self.x -= 1
-        self.direction = 'left'
-        self.did_i_score()
-        self.pick_up_box()
-        if self.carrying_box: self.carrying_box.x, self.carrying_box.y = self.x - 1, self.y
+        if not self.moving:
+            self.direction = 'left'
+            if (self.x - 1, self.y) not in globals.blocked_coordinates: 
+                self.old_x, self.target_x = self.x, int(self.x - 1)
+                self.direction = 'left'
+                self.moving = True
+                self.direction = 'left'
+
+    def set_nose(self):
+        nose_offset = {'up': (0, -1), 'down': (0,1), 'right': (1, 0), 'left': (-1, 0)}
+        (self.nose_x, self.nose_y) = (self.x + nose_offset[self.direction][0], self.y + nose_offset[self.direction][1])
 
     def pick_up_box(self):
         if not self.carrying_box:
             for box in globals.targets:
-                if box.x == self.x and box.y == self.y:
+                if (box.x, box.y) == (self.x, self.y) or (box.x, box.y) == (self.nose_x, self.nose_y):
                     box.being_carried = True
                     self.carrying_box = box
-                    print 'Player picked up a box'
 
     def did_i_score(self):
         if self.carrying_box:
             for dropoff_point in globals.dropoff_points:
-                if self.carrying_box.x == dropoff_point.x and self.carrying_box.y == dropoff_point.y:
+                if (int(self.carrying_box.x), int(self.carrying_box.y)) == (dropoff_point.x, dropoff_point.y):
                     self.score += self.carrying_box.points
                     self.carrying_box.collected = True
                     self.carrying_box.being_carried = False
                     globals.targets.remove(self.carrying_box)
                     self.carrying_box = False
-                    if len(targets) == 0:
+                    if len(globals.targets) == 0:
                         globals.win = True
                     print 'Dropped off a box at the dropoff point.'
                     return
 
+    def update_position(self):
+        if self.x < self.target_x-.1: self.x += self.speed
+        elif self.x > self.target_x+.1: self.x -= self.speed
+        elif self.y < self.target_y-.1: self.y += self.speed
+        elif self.y > self.target_y+.1: self.y -= self.speed
+        else:
+            self.x, self.y = self.target_x, self.target_y
+            self.set_nose()
+            self.pick_up_box()
+            self.moving = False
+        if self.carrying_box:
+            if self.direction == 'up': self.carrying_box.x, self.carrying_box.y = self.x, self.y - 1
+            if self.direction == 'right': self.carrying_box.x, self.carrying_box.y = self.x + 1, self.y
+            if self.direction == 'down': self.carrying_box.x, self.carrying_box.y = self.x, self.y + 1
+            if self.direction == 'left': self.carrying_box.x, self.carrying_box.y = self.x - 1, self.y
+            self.did_i_score()
+        
+
     def draw(self, canvas):
+        self.update_position()
         g = globals.grid_size
         canvas.draw_circle([g*self.x, g*self.y], g/2, 1, 'black', 'blue')
         nose_line = {'right': ([g*self.x, g*self.y], [g*self.x+g, g*self.y]),
@@ -78,7 +111,6 @@ class player():
 class dropoff_point():
     def __init__(self, x, y):
         self.x, self.y = x, y
-        global blocked_coordinates
         globals.blocked_coordinates.add((x,y))
     
     def draw(self, canvas):

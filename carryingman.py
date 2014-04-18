@@ -1,9 +1,11 @@
 import random
-try:
-    import simplegui
-except:
-    print 'No simplegui, no graphics'
 
+try: import simplegui
+except:
+    print 'Could not load simplegui. Loading simpleguitk instead'
+    import sys
+    if '/home/mch/Code/Python' not in sys.path: sys.path.append('/home/mch/Code/Python')
+    import simpleguitk as simplegui
 
 #configuration options
 grid_size = 15
@@ -35,14 +37,14 @@ def draw_handler(canvas):
 def keydown_handler(keycode):
     global has_moved
     has_moved = True
-    key = keys[keycode]
-    if key == 'right': p.move_right()
-    if key == 'down': p.move_down()
-    if key == 'left': p.move_left()
-    if key == 'up': p.move_up()
+    try:
+        key = keys[keycode]
+        if key == 'right': p.move_right()
+        if key == 'down': p.move_down()
+        if key == 'left': p.move_left()
+        if key == 'up': p.move_up()
+    except: print 'Invalid key press. Need to use arrow keys'
     
-def keyup_handler(keycode):
-    key = keys[keycode]
 
 class player():
     def __init__(self):
@@ -158,7 +160,6 @@ frame = simplegui.create_frame('Walking Player', grid_size * board_size[0], grid
 frame.set_canvas_background('white')
 frame.set_draw_handler(draw_handler)
 frame.set_keydown_handler(keydown_handler)
-frame.set_keyup_handler(keyup_handler)
 
 p = player()
 

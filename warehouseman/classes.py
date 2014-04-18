@@ -65,9 +65,11 @@ class player():
         if not self.carrying_box:
             current_totes = globals.totes
             for box in current_totes:
-                if box.home == 'divert' and ((int(round(box.x)), int(round(box.y))) == (self.x, self.y) or (int(round(box.x)), int(round(box.y))) == (self.nose_x, self.nose_y)):
+                if box.home == 'divert' and ((int(round(box.x)), int(round(box.y))) == (self.x, self.y)\
+                            or (int(round(box.x)), int(round(box.y))) == (self.nose_x, self.nose_y)):
                     box.being_carried = True
                     self.carrying_box = box
+                    return
 
     def pack_shipment(self):
         assert self.role == 'picker', "Must be picker to call pack_shipment"
@@ -152,7 +154,6 @@ class dropoff_point():
 
 class tote():
     def __init__(self, x, y, inventory, divert=False):
-        print 'spawned new tote with divert', divert
         self.x, self.y = x, y
         self.inventory = inventory
         self.collected = False
@@ -195,7 +196,8 @@ class tote():
                                  (g*self.x - g/2, g*self.y + g/2)],
                     1, 'blue', 'white')
 
-            canvas.draw_text(str(self.inventory), [g*self.x - 5, g*self.y + 5], 12, 'blue')
+            width = globals.frame.get_canvas_textwidth(str(self.inventory), globals.tote_font_size)
+            canvas.draw_text(str(self.inventory), [g*self.x - .5*width, g*self.y + .4*g], globals.tote_font_size, 'blue')
 
 class barrier():
     def __init__(self, x, y):

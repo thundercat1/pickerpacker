@@ -5,20 +5,17 @@ except:
 
 import random
 
-#globals
-
-#CONFIG OPTIONS
+#CONFIGURATION OPTIONS
 ##Play variables
 conveyorSpeed = 10
 diversionSpeed = 1
 inZoneProbability = 50
-maxItemsInTote = 10
-minItemsInTote = 1
+toteCapacity = (1,10)
 playerSpeed = 5
 
 ##Spacial variables
-yConveyor = 10
-yDiversion = 40 
+conveyorY = 10
+diversionY = 40 
 
 #holders to keep track of totes that are on the conveyor an/or diversion line
 conveyor = set([])
@@ -42,10 +39,9 @@ class tote():
     def __init__(self):
         conveyor.add(self)
         self.shelved = False
-        self.x = 400
-        self.y = 10
+        self.x, self.y = 400, conveyorY
         self.inZone = randomEvent(inZoneProbability)
-        self.quantity = random.randint(minItemsInTote, maxItemsInTote)
+        self.quantity = random.randint(toteCapacity[0],toteCapacity[1])
 
         
 generateTote()

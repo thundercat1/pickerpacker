@@ -2,7 +2,10 @@ import random
 try:
     import simplegui
 except:
-    print 'No simplegui, no graphics'
+    print 'Could not load simplegui. Loading simpleguitk instead'
+    import sys
+    if '/home/mch/Code/Python' not in sys.path: sys.path.append('/home/mch/Code/Python')
+    import simpleguitk as simplegui
 
 
 #configuration options
@@ -76,6 +79,7 @@ class dropoff_point():
         self.x, self.y = x, y
     
     def draw(self):
+        pass
         
 
 class target():

@@ -36,19 +36,20 @@ def go():
     globals.frame.set_keyup_handler(e.keyup_handler)
     
     cadence = simplegui.create_timer(100, e.poll_keyboard)
-    cadence.start()
-    tote_generator_timer = simplegui.create_timer(globals.tote_spawn_delay, e.generate_tote)
-    tote_generator_timer.start()
+    globals.timers.add(cadence)
+    tote_generator_timer = simplegui.create_timer(60/globals.totes_per_minute * 1000, e.generate_tote)
+    globals.timers.add(tote_generator_timer)
     cleanup_timer = simplegui.create_timer(1000, helpers.clean_up_totes)
-    cleanup_timer.start()
-    order_create_timer = simplegui.create_timer(globals.order_spawn_delay, helpers.place_order)
-    order_create_timer.start()
+    globals.timers.add(cleanup_timer)
+    order_create_timer = simplegui.create_timer(60/globals.orders_per_minute * 1000, helpers.place_order)
+    globals.timers.add(order_create_timer)
     order_countdown_timer = simplegui.create_timer(1000, e.age_orders)
-    order_countdown_timer.start()
+    globals.timers.add(order_countdown_timer)
 
     globals.packer = classes.player('packer', 13, 8, 'blue')
     globals.picker = classes.player('picker', 2, 8, 'cyan')
     globals.active_player = globals.packer
     globals.inactive_player = globals.picker
     
+    helpers.start_timers()
     globals.frame.start()

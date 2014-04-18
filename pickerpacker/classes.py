@@ -113,12 +113,8 @@ class player():
                         bay.full = False
                         tote.shelved = False
                         globals.totes.remove(tote)
-                        print globals.pickable_inventory
                         while tote in globals.pickable_inventory:
-                            print globals.pickable_inventory
-                            print 'removing tote from globals pickable inventory'
                             globals.pickable_inventory.remove(tote)
-                            time.sleep(1)
 
     def update_position(self):
         if self.x < self.target_x-.1: self.x += self.speed
@@ -179,8 +175,9 @@ class tote():
         self.home = 'conveyor'
 
     def make_pickable(self):
-        for i in range(0, self.inventory):
-            globals.pickable_inventory.append(self)
+        if self not in globals.pickable_inventory:
+            for i in range(0, self.inventory):
+                globals.pickable_inventory.append(self)
 
     def draw(self, canvas):
             g = globals.grid_size
@@ -249,7 +246,7 @@ class bay():
   
 class order():
     def __init__(self):
-        self.time_remaining = 20
+        self.time_remaining = globals.order_timeout
         max_order_items = min(globals.maximum_order, len(globals.pickable_inventory))
         try:
             self.order_size = random.randrange(1, max_order_items)

@@ -13,10 +13,19 @@ barriers = set([])
 score = 0
 bays = set([])
 pickable_inventory = []
-maximum_order = 10
-max_tote_size = 1
+timers = set([])
 
-win = False
+maximum_order = 10
+orders_per_minute = 2
+
+order_timeout = 25
+
+max_tote_size = 5
+totes_per_minute = 8
+divert_odds = .5
+
+
+game_over = False
 has_moved = False
 
 picker = None
@@ -25,15 +34,13 @@ packer = None
 active_player = None
 inactive_player = None
 
-player_default_speed = 1.0/15
+player_default_speed = 1.0/10
 default_conveyor_speed = 1.0/30
 divert_speed = 1.0/240
-tote_spawn_delay = 4000
-order_spawn_delay = 15000
+
 order = False
 
 #odds are implied __/100
-divert_odds = 50
 divert_y = 9
 divert_x = 3
 divert_end_x = 15

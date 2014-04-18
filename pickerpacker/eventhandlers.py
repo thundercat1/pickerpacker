@@ -39,8 +39,8 @@ def draw_handler(canvas):
         canvas.draw_text(instruction2, [5, 120], 12, 'blue')
         canvas.draw_text(instruction3, [5, 140], 12, 'blue')
 
-    if globals.win:
-        canvas.draw_text('You win! Close the window and restart to play again', [20, 100], 18, 'blue')
+    if globals.game_over:
+        canvas.draw_text('You Lose! Close the window and restart to play again', [20, 100], 18, 'blue')
     
 def keydown_handler(keycode):
     globals.has_moved = True
@@ -72,13 +72,13 @@ def poll_keyboard():
     elif globals.down: globals.active_player.move_down()
 
 def generate_tote():
-    divert =  helpers.event_happens(globals.divert_odds)
-    globals.totes.append(classes.tote(20, 11, random.randint(1,globals.max_tote_size), divert))
+    if len(globals.totes) < 35:
+        divert =  helpers.event_happens(globals.divert_odds)
+        globals.totes.append(classes.tote(20, 11, random.randint(1,globals.max_tote_size), divert))
 
 def age_orders():
     if globals.order:
         if globals.order.time_remaining == 0:
-            globals.game_over = True
-            helpers.stop_game()
+            helpers.end_game()
         else:
             globals.order.time_remaining -= 1

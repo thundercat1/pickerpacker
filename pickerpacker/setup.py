@@ -46,10 +46,11 @@ def go():
     order_countdown_timer = simplegui.create_timer(1000, e.age_orders)
     globals.timers.add(order_countdown_timer)
 
-    globals.packer = classes.player('packer', 13, 8, 'blue')
-    globals.picker = classes.player('picker', 2, 8, 'cyan')
+    globals.packer = classes.player('Packer', 13, 8, 'blue')
+    globals.picker = classes.player('Picker', 2, 8, 'cyan')
     globals.active_player = globals.packer
     globals.inactive_player = globals.picker
     
+    e.generate_tote()
     helpers.start_timers()
     globals.frame.start()

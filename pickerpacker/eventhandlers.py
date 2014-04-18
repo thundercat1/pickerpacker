@@ -28,31 +28,26 @@ def draw_handler(canvas):
     current_totes = copy.copy(globals.totes)
     for tote in current_totes:
         tote.draw(canvas)
-    canvas.draw_text(str(globals.score), [globals.grid_size * (globals.board_size[0]-2), globals.grid_size * (globals.board_size[1])], 30, 'blue')
-    canvas.draw_text('You are ' + str(globals.active_player.role) + '. Change with spacebar', [1*globals.grid_size, 13*globals.grid_size], 12, 'blue')
-
-    if not globals.has_moved:
-        instruction = 'Blue player is packer. He gets tote and stores it in a teal bay'
-        instruction2 = 'Cyan player is picker, who collects from full bays to yellow pack station'
-        instruction3 = 'Arrow keys move players. Space bar switches to other player'
-        canvas.draw_text(instruction, [5, 100], 12, 'blue')
-        canvas.draw_text(instruction2, [5, 120], 12, 'blue')
-        canvas.draw_text(instruction3, [5, 140], 12, 'blue')
+    canvas.draw_text(str(globals.score) + 'pts', [globals.grid_size * (globals.board_size[0]-4), globals.grid_size * (globals.board_size[1])], 28, 'blue')
+    canvas.draw_text('Controlling: ' + globals.active_player.role, [10, globals.grid_size], 14, 'blue')
+    canvas.draw_text(helpers.get_current_instruction(), [10, 7.5*globals.grid_size], 12, 'blue')
 
     if globals.game_over:
         canvas.draw_text('You Lose! Close the window and restart to play again', [20, 100], 18, 'blue')
     
 def keydown_handler(keycode):
-    globals.has_moved = True
     key = ''
     try:
         key = globals.keys[keycode]
     except: print 'Invalid key press. Need to use arrow keys'
+    globals.progress_completed['move'] = True
     if key == 'right': globals.right = True
     if key == 'down': globals.down = True
     if key == 'left': globals.left = True
     if key == 'up': globals.up = True
-    if key == 'space': globals.active_player, globals.inactive_player = globals.inactive_player, globals.active_player
+    if key == 'space': 
+        globals.active_player, globals.inactive_player = globals.inactive_player, globals.active_player
+        globals.progress_completed['change_player'] = True
     
 def keyup_handler(keycode):
     key = ''
@@ -79,6 +74,8 @@ def generate_tote():
 def age_orders():
     if globals.order:
         if globals.order.time_remaining == 0:
-            helpers.end_game()
+            globals.game_over = True
+            globals.progress_completed['play_game'] = True
+            helpers.pause_game()
         else:
             globals.order.time_remaining -= 1

@@ -24,11 +24,17 @@ def check_open_order():
             return True
     return False
 
-def end_game():
-    globals.game_over = True
+def pause_game():
     for timer in globals.timers:
         timer.stop()
 
 def start_timers():
     for timer in globals.timers:
         timer.start()
+
+def get_current_instruction():
+#{'move': False, 'divert': False, 'pack': False, 'order': False, 'pick': False, 'ship': False, 'playing': False, 'gameover': False   }
+    for step in globals.progress_steps:
+        if not globals.progress_completed[step]:
+            return globals.instructions[step]
+

@@ -63,7 +63,7 @@ class player():
         (self.nose_x, self.nose_y) = (self.x + nose_offset[self.direction][0], self.y + nose_offset[self.direction][1])
 
     def pick_up_box(self):
-        assert self.role == 'packer', 'Only the packer can pick up box.'
+        assert self.role == 'Packer', 'Only the packer can pick up box.'
         if not self.carrying_box:
             current_totes = globals.totes
             for box in current_totes:
@@ -75,37 +75,40 @@ class player():
                     return
 
     def pack_shipment(self):
-        assert self.role == 'picker', "Must be picker to call pack_shipment"
+        assert self.role == 'Picker', "Must be picker to call pack_shipment"
         if self.carrying_inventory > 0 and globals.order:
             for dropoff_point in globals.dropoff_points:
                 if ((dropoff_point.x, dropoff_point.y) == (int(self.nose_x), int(self.nose_y))):
                     print 'Packing a shipment worth', self.carrying_inventory, 'points'
                     globals.score += self.carrying_inventory
                     self.carrying_inventory = 0
+                    globals.progress_completed['ship'] = True
                     if not helpers.check_open_order():
                         globals.order = False
                     return
 
     def shelve_box(self):
         assert self.carrying_box, "Must be carrying box to call shelve_box"
-        assert self.role == 'packer', "Must be packer to call shelve_box"
+        assert self.role == 'Packer', "Must be packer to call shelve_box"
         for bay in globals.bays:
             if not bay.full:
                 if (int(self.carrying_box.x), int(self.carrying_box.y)) == (bay.x, bay.y):
                     self.carrying_box.x, self.carrying_box.y = bay.x, bay.y
                     bay.full = self.carrying_box
                     bay.full.home = 'shelf'
+                    globals.progress_completed['pack'] = True
                     self.carrying_box.shelved = True
                     self.carrying_box = False
                     return
 
     def pick_inventory(self):
-        assert self.role == 'picker', "You must be picker to call pick_item"
+        assert self.role == 'Picker', "You must be picker to call pick_item"
         for bay in globals.bays:
             if bay.full and bay.full.on_order > 0:
                 if ((bay.x, bay.y) == (int(self.nose_x), int(self.nose_y))):
                     tote = bay.full
                     print 'picking inventory'
+                    globals.progress_completed['pick'] = True
                     tote.inventory -= 1
                     tote.on_order -= 1
                     self.carrying_inventory += 1
@@ -125,7 +128,7 @@ class player():
             self.x, self.y = self.target_x, self.target_y
             self.set_nose()
             self.moving = False
-            if self.role == 'packer': 
+            if self.role == 'Packer': 
                 self.pick_up_box()
             else:
                 self.pick_inventory()
@@ -197,6 +200,7 @@ class tote():
                         self.y -= globals.divert_speed
                     else:
                         self.y = globals.divert_y
+                        globals.progress_completed['divert'] = True
                         self.home = 'divert'
 
                 if self.home == 'divert':
@@ -257,10 +261,11 @@ class order():
                 tote.on_order += 1
             globals.order_ready_to_pick = True
             globals.order = self
+            globals.progress_completed['order'] = True
 
         except:
             print 'Could not build order. No pickable inventory'
 
     def draw(self, canvas):
        g = globals.grid_size
-       canvas.draw_text('Order Up Qty: ' + str(self.order_size) + ' Time: ' + str(self.time_remaining), [10, 8*g], 14, 'blue')
+       canvas.draw_text('ORDER UP! ' + str(self.time_remaining), [1, globals.grid_size*globals.board_size[1]], 28, 'red')

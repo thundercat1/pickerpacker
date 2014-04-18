@@ -27,6 +27,7 @@ divert_odds = .5
 
 game_over = False
 has_moved = False
+has_diverted = False
 
 picker = None
 packer = None
@@ -49,3 +50,18 @@ up = False
 right = False
 down = False
 left = False
+
+
+instructions = {'move': 'Use arrow keys to move the player.', 
+            'divert': 'Most totes are heading to other zones of the warehouse.', 
+            'pack': 'A tote has arrived in your zone! Take it to a blue empty bay.', 
+            'order': 'The most popular items arrive with the most inventory',
+            'change_player': 'An order! Use space bar to change control to the picker.',
+            'pick': 'Collect the items from each orange bay.',
+            'ship': 'Deliver order to the yellow ship station before time runs out.',
+            'play_game': '',
+            'gameover': 'Game Over'}
+
+progress_steps = ['move', 'divert', 'pack', 'order', 'change_player', 'pick', 'ship', 'play_game', 'gameover']
+progress_completed = {'move': False, 'divert': False, 'pack': False, 'order': False, 'change_player': False, 
+                             'pick': False, 'ship': False, 'play_game': False, 'gameover': False}

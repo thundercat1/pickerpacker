@@ -27,7 +27,7 @@ def go():
             elif args[0] == 'dropoff_point':
                 globals.dropoff_points.add(classes.dropoff_point(int(args[1]), int(args[2])))
             elif args[0] == 'tote':
-                globals.totes.add(classes.tote(int(args[1]), int(args[2]), random.randint(1,10)))
+                globals.totes.append(classes.tote(int(args[1]), int(args[2]), random.randint(1,10)))
     
     globals.frame = simplegui.create_frame('Warehouse Man', globals.grid_size * globals.board_size[0], globals.grid_size * globals.board_size[1])
     globals.frame.set_canvas_background('white')
@@ -41,6 +41,10 @@ def go():
     tote_generator_timer.start()
     cleanup_timer = simplegui.create_timer(1000, helpers.clean_up_totes)
     cleanup_timer.start()
+    order_create_timer = simplegui.create_timer(globals.order_spawn_delay, helpers.place_order)
+    order_create_timer.start()
+    order_countdown_timer = simplegui.create_timer(1000, e.age_orders)
+    order_countdown_timer.start()
 
     globals.packer = classes.player('packer', 13, 8, 'blue')
     globals.picker = classes.player('picker', 2, 8, 'cyan')
@@ -48,28 +52,3 @@ def go():
     globals.inactive_player = globals.picker
     
     globals.frame.start()
-    
-    #for i in range(0,10):
-    #    x = random.randrange(1, globals.board_size[0])
-    #    y = random.randrange(1, globals.board_size[1])
-    #    points = random.randint(1,5)*5
-    #    globals.totes.add(classes.tote(x, y, points))
-    #
-    #for i in range(0,2):
-    #    x = random.randrange(1, globals.board_size[0])
-    #    y = random.randrange(1, globals.board_size[1])
-    #    globals.dropoff_points.add(classes.dropoff_point(x,y))
-    
-    #globals.barriers.add(classes.barrier((15, 10), (17, 10), (17, 15), (15, 15)))
-    
-    #for i in range(0,2):
-    #    x = random.randrange(1, globals.board_size[0])
-    #    y = random.randrange(1, globals.board_size[1])
-    #    globals.bays.add(classes.bay(x,y))
-    #
-    #illegal_totes = set([])
-    #for tote in globals.totes:
-    #    if (tote.x, tote.y) in globals.blocked_coordinates:
-    #        illegal_totes.add(tote)
-    #
-    #for illegal_tote in illegal_totes:

@@ -1,3 +1,4 @@
+import time
 import random
 try: import simplegui
 except:
@@ -7,6 +8,7 @@ except:
     import simpleguitk as simplegui
 import eventhandlers as e
 import globals
+import helpers
 
 class player():
     def __init__(self, role, startx, starty, color):
@@ -68,19 +70,21 @@ class player():
                 if box.home == 'divert' and ((int(round(box.x)), int(round(box.y))) == (self.x, self.y)\
                             or (int(round(box.x)), int(round(box.y))) == (self.nose_x, self.nose_y)):
                     box.being_carried = True
+                    box.home = 'player'
                     self.carrying_box = box
                     return
 
     def pack_shipment(self):
         assert self.role == 'picker', "Must be picker to call pack_shipment"
-        for dropoff_point in globals.dropoff_points:
-            if ((dropoff_point.x, dropoff_point.y) == (int(self.nose_x), int(self.nose_y))):
-                print 'Packing a shipment worth', self.carrying_inventory, 'points'
-                globals.score += self.carrying_inventory
-                self.carrying_inventory = 0
-                if len(globals.totes) == 0:
-                    globals.win = True
-                return
+        if self.carrying_inventory > 0 and globals.order:
+            for dropoff_point in globals.dropoff_points:
+                if ((dropoff_point.x, dropoff_point.y) == (int(self.nose_x), int(self.nose_y))):
+                    print 'Packing a shipment worth', self.carrying_inventory, 'points'
+                    globals.score += self.carrying_inventory
+                    self.carrying_inventory = 0
+                    if not helpers.check_open_order():
+                        globals.order = False
+                    return
 
     def shelve_box(self):
         assert self.carrying_box, "Must be carrying box to call shelve_box"
@@ -98,15 +102,23 @@ class player():
     def pick_inventory(self):
         assert self.role == 'picker', "You must be picker to call pick_item"
         for bay in globals.bays:
-            if bay.full and bay.needs_picked:
+            if bay.full and bay.full.on_order > 0:
                 if ((bay.x, bay.y) == (int(self.nose_x), int(self.nose_y))):
+                    tote = bay.full
                     print 'picking inventory'
-                    bay.full.inventory -= 1
+                    tote.inventory -= 1
+                    tote.on_order -= 1
                     self.carrying_inventory += 1
-                    if bay.full.inventory == 0:
-                        globals.totes.remove(bay.full)
-                        bay.full.shelved = False
+                    if tote.inventory == 0:
                         bay.full = False
+                        tote.shelved = False
+                        globals.totes.remove(tote)
+                        print globals.pickable_inventory
+                        while tote in globals.pickable_inventory:
+                            print globals.pickable_inventory
+                            print 'removing tote from globals pickable inventory'
+                            globals.pickable_inventory.remove(tote)
+                            time.sleep(1)
 
     def update_position(self):
         if self.x < self.target_x-.1: self.x += self.speed
@@ -156,6 +168,8 @@ class tote():
     def __init__(self, x, y, inventory, divert=False):
         self.x, self.y = x, y
         self.inventory = inventory
+        
+        self.on_order = 0
         self.collected = False
         self.being_carried = False
         self.shelved = False
@@ -163,6 +177,10 @@ class tote():
         self.divert = divert
         self.speed = globals.default_conveyor_speed
         self.home = 'conveyor'
+
+    def make_pickable(self):
+        for i in range(0, self.inventory):
+            globals.pickable_inventory.append(self)
 
     def draw(self, canvas):
             g = globals.grid_size
@@ -185,16 +203,18 @@ class tote():
                         self.home = 'divert'
 
                 if self.home == 'divert':
+                    self.make_pickable()
                     if self.x < globals.divert_end_x:
                         self.x += globals.divert_speed
                     else:
                         self.x = globals.divert_end_x
                     
+            color = {False: 'white', True: 'orange'}
             canvas.draw_polygon([(g*self.x - g/2, g*self.y - g/2),
                                  (g*self.x + g/2, g*self.y - g/2),
                                  (g*self.x + g/2, g*self.y + g/2),
                                  (g*self.x - g/2, g*self.y + g/2)],
-                    1, 'blue', 'white')
+                    1, 'blue', color[self.on_order > 0])
 
             width = globals.frame.get_canvas_textwidth(str(self.inventory), globals.tote_font_size)
             canvas.draw_text(str(self.inventory), [g*self.x - .5*width, g*self.y + .4*g], globals.tote_font_size, 'blue')
@@ -227,10 +247,23 @@ class bay():
                              (g*self.x - g/2, g*self.y + g/2)],
                 1, 'blue', 'teal')
   
+class order():
+    def __init__(self):
+        self.time_remaining = 20
+        max_order_items = min(globals.maximum_order, len(globals.pickable_inventory))
+        try:
+            self.order_size = random.randrange(1, max_order_items)
+            random.shuffle(globals.pickable_inventory)
+            print 'Creating order for', self.order_size, 'items' 
+            for i in range(0, self.order_size):
+                tote = globals.pickable_inventory[i]
+                tote.on_order += 1
+            globals.order_ready_to_pick = True
+            globals.order = self
 
+        except:
+            print 'Could not build order. No pickable inventory'
 
-
-
-
-
-
+    def draw(self, canvas):
+       g = globals.grid_size
+       canvas.draw_text('Order Up Qty: ' + str(self.order_size) + ' Time: ' + str(self.time_remaining), [10, 8*g], 14, 'blue')
